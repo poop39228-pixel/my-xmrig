@@ -1,0 +1,17 @@
+workflows:
+  ios-native:
+    name: iOS Native Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - push
+    scripts:
+      - name: Build iOS Application
+        script: |
+          xcodebuild -project "ios/XMRigMiner-iOS.xcodeproj" -scheme "XMRigMiner-iOS" -configuration Release -sdk iphoneos build CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - build/ios/outputs/*.ipa
