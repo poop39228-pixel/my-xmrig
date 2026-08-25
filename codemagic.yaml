@@ -9,23 +9,21 @@ workflows:
       - name: Install dependencies
         script: |
           brew install cmake libuv openssl
+      - name: Fetch iOS Toolchain
+        script: |
+          git clone https://github.com/leetal/ios-cmake.git
       - name: Build XMRig
         script: |
-          # Locate CMakeLists.txt whether it's in root or a subfolder
-          if [ -f "CMakeLists.txt" ]; then
-            TARGET_DIR="."
-          else
-            TARGET_DIR=$(dirname $(find . -maxdepth 2 -name "CMakeLists.txt" | head -n 1))
-          fi
-          
-          cd "$TARGET_DIR"
           mkdir -p build && cd build
           
-          cmake .. \
+          LDFLAGS="-framework CoreFoundation" cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=../ios-cmake/ios.toolchain.cmake \
+            -DPLATFORM=OS64 \
             -DOPENSSL_ROOT_DIR=$(brew --prefix openssl) \
             -DWITH_OPENCL=OFF \
-            -DWITH_CUDA=OFF
+            -DWITH_CUDA=OFF \
+            -DWITH_SECURE_JIT=OFF
             
           make -j$(sysctl -n hw.ncpu)
     artifacts:
-      - "**/build/xmrig"
+      - build/xmrig
