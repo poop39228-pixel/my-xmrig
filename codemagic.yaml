@@ -9,14 +9,20 @@ workflows:
       - name: Install dependencies
         script: |
           brew install cmake libuv openssl
-      - name: Fetch iOS Toolchain
+      - name: Clone and Build XMRig
         script: |
-          git clone https://github.com/leetal/ios-cmake.git
-      - name: Build XMRig
-        script: |
-          mkdir -p build && cd build
+          # 1. Download official XMRig directly into the build environment
+          git clone https://github.com/xmrig/xmrig.git official-xmrig
+          cd official-xmrig
           
-          LDFLAGS="-framework CoreFoundation" cmake .. \
+          # 2. Download iOS Toolchain
+          git clone https://github.com/leetal/ios-cmake.git
+          
+          # 3. Create build directory inside the verified repo
+          mkdir build && cd build
+          
+          # 4. Configure with CMake
+          cmake .. \
             -DCMAKE_TOOLCHAIN_FILE=../ios-cmake/ios.toolchain.cmake \
             -DPLATFORM=OS64 \
             -DOPENSSL_ROOT_DIR=$(brew --prefix openssl) \
@@ -24,6 +30,7 @@ workflows:
             -DWITH_CUDA=OFF \
             -DWITH_SECURE_JIT=OFF
             
+          # 5. Compile executable
           make -j$(sysctl -n hw.ncpu)
     artifacts:
-      - build/xmrig
+      - official-xmrig/build/xmrig
