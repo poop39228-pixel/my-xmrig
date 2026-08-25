@@ -1,0 +1,20 @@
+workflows:
+  ios-build:
+    name: Build iOS Binary
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+    scripts:
+      - name: Build XMRig for iOS
+        script: |
+          mkdir -p build && cd build
+          cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=scripts/ios.toolchain.cmake \
+            -DPLATFORM=OS64 \
+            -DWITH_OPENCL=OFF \
+            -DWITH_CUDA=OFF \
+            -DWITH_SECURE_JIT=OFF
+          make -j$(sysctl -n hw.ncpu)
+    artifacts:
+      - build/xmrig
